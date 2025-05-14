@@ -6,96 +6,112 @@
     "editable_grid": 1,
     "engine": "InnoDB",
     "field_order": [
-        "signatory",
-        "signatory_name",
-        "signatory_email",
-        "signature_status",
-        "recipient_id",
-        "last_tried",
-        "column_break_1",
-        "signing_order",
-        "signed_at",
-        "message",
-        "required"
+      "signatory",
+      "signatory_name",
+      "signatory_email",
+      "signature_status",
+      "reference_id",
+      "last_tried",
+      "column_break_1",
+      "signing_order",
+      "signed_at",
+      "message",
+      "required",
+      "placeholder",
+      "signatory_type"
     ],
     "fields": [
-        {
-            "columns": 2,
-            "fieldname": "signatory",
-            "fieldtype": "Link",
-            "in_list_view": 1,
-            "label": "Signatory",
-            "options": "User"
-        },
-        {
-            "columns": 2,
-            "fetch_from": "signatory.full_name",
-            "fetch_if_empty": 1,
-            "fieldname": "signatory_name",
-            "fieldtype": "Data",
-            "in_list_view": 1,
-            "label": "Signatory Name",
-            "reqd": 1
-        },
-        {
-            "columns": 1,
-            "fetch_from": "signatory.email",
-            "fetch_if_empty": 1,
-            "fieldname": "signatory_email",
-            "fieldtype": "Data",
-            "in_list_view": 1,
-            "label": "Signatory Email",
-            "reqd": 1
-        },
-        {
-            "columns": 2,
-            "fieldname": "signature_status",
-            "fieldtype": "Select",
-            "in_list_view": 1,
-            "label": "Signature Status",
-            "options": "Not Initiated\nPending\nViewed\nSigned\nDeclined\nFailed",
-            "default": "Not Initiated",
-            "read_only": 1
-        },
-        {
-            "fieldname": "recipient_id",
-            "fieldtype": "Data",
-            "label": "Recipient ID",
-            "read_only": 1
-        },
-        {
-            "fieldname": "last_tried",
-            "fieldtype": "Datetime",
-            "label": "Last Tried",
-            "read_only": 1
-        },
-        {
-            "fieldname": "column_break_1",
-            "fieldtype": "Column Break"
-        },
-        {
-            "fieldname": "signing_order",
-            "fieldtype": "Int",
-            "label": "Signing Order",
-            "default": 1
-        },
-        {
-            "fieldname": "signed_at",
-            "fieldtype": "Datetime",
-            "label": "Signed At",
-            "read_only": 1
-        },
-        {
-            "fieldname": "message",
-            "fieldtype": "Text",
-            "label": "Message"
-        },
-        {
-            "fieldname": "required",
-            "fieldtype": "Check",
-            "label": "Required",
-            "default": 1
-        }
+      {
+        "columns": 2,
+        "fieldname": "signatory",
+        "fieldtype": "Link",
+        "in_list_view": 1,
+        "label": "Signatory",
+        "options": "User"
+      },
+      {
+        "columns": 2,
+        "fetch_from": "signatory.full_name",
+        "fetch_if_empty": 1,
+        "fieldname": "signatory_name",
+        "fieldtype": "Data",
+        "in_list_view": 1,
+        "label": "Signatory Name",
+        "reqd": 1
+      },
+      {
+        "columns": 1,
+        "fetch_from": "signatory.email",
+        "fetch_if_empty": 1,
+        "fieldname": "signatory_email",
+        "fieldtype": "Data",
+        "in_list_view": 1,
+        "label": "Signatory Email",
+        "reqd": 1
+      },
+      {
+        "columns": 2,
+        "fieldname": "signature_status",
+        "fieldtype": "Select",
+        "in_list_view": 1,
+        "label": "Signature Status",
+        "options": "Not Initiated\nPending Review\nReview In-Progress\nRejected\nFailure\nCompleted",
+        "default": "Not Initiated",
+        "read_only": 1
+      },
+      {
+        "fieldname": "reference_id",
+        "fieldtype": "Data",
+        "label": "Reference ID",
+        "read_only": 1
+      },
+      {
+        "fieldname": "last_tried",
+        "fieldtype": "Datetime",
+        "label": "Last Tried",
+        "read_only": 1
+      },
+      {
+        "fieldname": "column_break_1",
+        "fieldtype": "Column Break"
+      },
+      {
+        "fieldname": "signing_order",
+        "fieldtype": "Int",
+        "label": "Signing Order",
+        "default": 1
+      },
+      {
+        "fieldname": "signed_at",
+        "fieldtype": "Datetime",
+        "label": "Signed At",
+        "read_only": 1
+      },
+      {
+        "fieldname": "message",
+        "fieldtype": "Text",
+        "label": "Message"
+      },
+      {
+        "fieldname": "required",
+        "fieldtype": "Check",
+        "label": "Required",
+        "default": 1
+      },
+      {
+        "fieldname": "placeholder",
+        "fieldtype": "Data",
+        "label": "Placeholder",
+        "description": "e.g., {{signature_1}} to match in print format",
+        "default": "{{signature_1}}"
+      },
+      {
+        "fieldname": "signatory_type",
+        "fieldtype": "Select",
+        "label": "Signatory Type",
+        "options": "Customer\nSupplier\nEmployee\nInternal",
+        "default": "Customer"
+      }
     ],
     "index_web_pages_for_search": 1,
     "istable": 1,
@@ -109,4 +125,4 @@
     "sort_field": "modified",
     "sort_order": "DESC",
     "track_changes": 1
-}
+  }

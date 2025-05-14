@@ -40,15 +40,13 @@ def documenso_webhook():
 def handle_webhook(data):
     """Handle Documenso webhook events"""
     try:
-        event_type = data.get("type")
-        payload = data.get("data")
+        event_type = data.get("type") or data.get("event")
+        payload = data.get("data") or data
         
         if event_type == "document.completed":
             handle_document_completed(payload)
-        elif event_type == "signature.completed":
+        elif event_type == "signature.completed" or event_type == "recipient.signed":
             handle_signature_completed(payload)
-        elif event_type == "recipient.signed":
-            handle_recipient_signed(payload)
         
         return {"status": "success"}
     except Exception as e:
@@ -58,13 +56,28 @@ def handle_webhook(data):
 
 def handle_document_completed(payload):
     """Handle document completed event"""
-    document_id = payload.get("documentId")
+    document_id = payload.get("documentId") or payload.get("id")
     
-    # Find the document
+    if not document_id:
+        frappe.log_error("No document ID in webhook payload", "Documenso Webhook Error")
+        return
+    
+    # Find the document and update status
     filters = {"document_id": document_id}
     for doctype in frappe.get_all("Documenso Doctype", pluck="doctype_name"):
         docs = frappe.get_all(doctype, filters=filters, limit=1)
         if docs:
+            doc = frappe.get_doc(doctype, docs[0].name)
+            
+            # Update all signatories to completed
+            for signatory in doc.signatory_detail:
+                if signatory.signature_status != "Completed":
+                    signatory.signature_status = "Completed"
+                    signatory.signed_at = frappe.utils.now()
+            
+            doc.save()
+            
+            # Check and download signed document
             from documenso.documenso.api.documenso import check_document_status
             check_document_status(doctype, docs[0].name)
             break
@@ -72,8 +85,12 @@ def handle_document_completed(payload):
 
 def handle_signature_completed(payload):
     """Handle signature completed event"""
-    document_id = payload.get("documentId")
-    recipient_id = payload.get("recipientId")
+    document_id = payload.get("documentId") or payload.get("id")
+    recipient_email = payload.get("recipientEmail") or payload.get("email")
+    
+    if not document_id:
+        frappe.log_error("No document ID in webhook payload", "Documenso Webhook Error")
+        return
     
     # Update recipient status
     filters = {"document_id": document_id}
@@ -81,16 +98,22 @@ def handle_signature_completed(payload):
         docs = frappe.get_all(doctype, filters=filters, limit=1)
         if docs:
             doc = frappe.get_doc(doctype, docs[0].name)
+            updated = False
+            
             for signatory in doc.signatory_detail:
-                if signatory.recipient_id == recipient_id:
-                    signatory.signature_status = "Signed"
+                if signatory.signatory_email == recipient_email:
+                    signatory.signature_status = "Completed"
                     signatory.signed_at = frappe.utils.now()
-                    doc.save()
+                    updated = True
                     break
+            
+            if updated:
+                doc.save()
+                
+                # Check if all signatures are complete
+                all_signed = all(s.signature_status == "Completed" for s in doc.signatory_detail)
+                if all_signed:
+                    # Download signed document
+                    from documenso.documenso.api.documenso import check_document_status
+                    check_document_status(doctype, docs[0].name)
             break
-
-
-def handle_recipient_signed(payload):
-    """Handle recipient signed event"""
-    # Similar to signature completed
-    handle_signature_completed(payload)

@@ -6,70 +6,86 @@
     "editable_grid": 1,
     "engine": "InnoDB",
     "field_order": [
-        "permitted_doctype",
-        "signatory",
-        "signatory_name",
-        "signatory_email",
-        "column_break_1",
-        "signing_order",
-        "required",
-        "message"
+      "permitted_doctype",
+      "signatory",
+      "signatory_name",
+      "signatory_email",
+      "column_break_1",
+      "signing_order",
+      "required",
+      "message",
+      "placeholder",
+      "signatory_type"
     ],
     "fields": [
-        {
-            "fieldname": "permitted_doctype",
-            "fieldtype": "Link",
-            "in_list_view": 1,
-            "label": "Permitted Doctype",
-            "options": "DocType",
-            "reqd": 1
-        },
-        {
-            "fieldname": "signatory",
-            "fieldtype": "Link",
-            "in_list_view": 1,
-            "label": "Signatory",
-            "options": "User"
-        },
-        {
-            "fetch_from": "signatory.full_name",
-            "fetch_if_empty": 1,
-            "fieldname": "signatory_name",
-            "fieldtype": "Data",
-            "in_list_view": 1,
-            "label": "Signatory Name",
-            "reqd": 1
-        },
-        {
-            "fetch_from": "signatory.email",
-            "fetch_if_empty": 1,
-            "fieldname": "signatory_email",
-            "fieldtype": "Data",
-            "in_list_view": 1,
-            "label": "Signatory Email",
-            "reqd": 1
-        },
-        {
-            "fieldname": "column_break_1",
-            "fieldtype": "Column Break"
-        },
-        {
-            "fieldname": "signing_order",
-            "fieldtype": "Int",
-            "label": "Signing Order",
-            "default": 1
-        },
-        {
-            "fieldname": "required",
-            "fieldtype": "Check",
-            "label": "Required",
-            "default": 1
-        },
-        {
-            "fieldname": "message",
-            "fieldtype": "Text",
-            "label": "Custom Message"
-        }
+      {
+        "fieldname": "permitted_doctype",
+        "fieldtype": "Link",
+        "in_list_view": 1,
+        "label": "Permitted Doctype",
+        "options": "DocType",
+        "reqd": 1
+      },
+      {
+        "fieldname": "signatory",
+        "fieldtype": "Link",
+        "in_list_view": 1,
+        "label": "Signatory",
+        "options": "User"
+      },
+      {
+        "fetch_from": "signatory.full_name",
+        "fetch_if_empty": 1,
+        "fieldname": "signatory_name",
+        "fieldtype": "Data",
+        "in_list_view": 1,
+        "label": "Signatory Name",
+        "reqd": 1
+      },
+      {
+        "fetch_from": "signatory.email",
+        "fetch_if_empty": 1,
+        "fieldname": "signatory_email",
+        "fieldtype": "Data",
+        "in_list_view": 1,
+        "label": "Signatory Email",
+        "reqd": 1
+      },
+      {
+        "fieldname": "column_break_1",
+        "fieldtype": "Column Break"
+      },
+      {
+        "fieldname": "signing_order",
+        "fieldtype": "Int",
+        "label": "Signing Order",
+        "default": 1
+      },
+      {
+        "fieldname": "required",
+        "fieldtype": "Check",
+        "label": "Required",
+        "default": 1
+      },
+      {
+        "fieldname": "message",
+        "fieldtype": "Text",
+        "label": "Custom Message"
+      },
+      {
+        "fieldname": "placeholder",
+        "fieldtype": "Data",
+        "label": "Placeholder",
+        "description": "Text to search for in PDF, e.g., {{signature_1}}",
+        "default": "{{signature_1}}"
+      },
+      {
+        "fieldname": "signatory_type",
+        "fieldtype": "Select",
+        "label": "Signatory Type",
+        "options": "Contact\nDocument Owner\nUser",
+        "default": "Contact"
+      }
     ],
     "index_web_pages_for_search": 1,
     "istable": 1,
@@ -83,4 +99,4 @@
     "sort_field": "modified",
     "sort_order": "DESC",
     "track_changes": 1
-}
+  }

@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Failure</title>
+    <title>Cancelled</title>
     <style>
+        /* Hide Frappe Header, Footer, and Sidebars */
+        .navbar, .footer, #page-desktop, #page-header {
+            display: none !important;
+        }
+        /* Body Styling */
         body {
             background-color: #f4f6f8;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -15,6 +20,7 @@
             align-items: center;
             height: 100vh;
         }
+        /* Cancelled Page Container */
         .container {
             background: white;
             padding: 40px 50px;
@@ -23,9 +29,9 @@
             text-align: center;
             max-width: 400px;
         }
-        .crossmark {
+        .warning {
             font-size: 100px;
-            color: #D32F2F;
+            color: #FFA000;
             margin-bottom: 20px;
         }
         h1 {
@@ -43,7 +49,7 @@
             padding: 12px 25px;
             font-size: 16px;
             color: #fff;
-            background-color: #D32F2F;
+            background-color: #FFA000;
             border: none;
             border-radius: 50px;
             text-decoration: none;
@@ -51,15 +57,15 @@
             transition: background-color 0.3s ease;
         }
         .btn:hover {
-            background-color: #C62828;
+            background-color: #FF8F00;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="crossmark">&#10060;</div>
-        <h1>Failure</h1>
-        <p>Something went wrong. The document could not be signed.</p>
+        <div class="warning">&#9888;</div>
+        <h1>Cancelled</h1>
+        <p>The signing process has been cancelled by the user.</p>
     </div>
 </body>
 </html>

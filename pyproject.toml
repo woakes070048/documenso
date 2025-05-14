@@ -9,7 +9,8 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     "requests",
-    "pyjwt"
+    "pyjwt",
+    "PyMuPDF"
 ]
 
 [build-system]

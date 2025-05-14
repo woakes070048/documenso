@@ -1,154 +1,154 @@
 {
- "actions": [],
- "allow_rename": 1,
- "creation": "2024-01-01 00:00:00",
- "doctype": "DocType",
- "engine": "InnoDB",
- "field_order": [
-  "credentials_tab",
-  "api_url",
-  "api_key",
-  "column_break_1",
-  "deployment_type",
-  "webhook_secret",
-  "section_break_unmn",
-  "doctypes",
-  "column_break_2",
-  "default_expiry_days",
-  "reminder_days",
-  "email_settings",
-  "send_completion_email",
-  "column_break_3",
-  "custom_email_template",
-  "section_break_cwbk",
-  "authorized_signatory",
-  "print_format"
- ],
- "fields": [
-  {
-   "fieldname": "credentials_tab",
-   "fieldtype": "Tab Break",
-   "label": "Credentials"
-  },
-  {
-   "description": "For cloud: https://api.documenso.com, For self-hosted: your instance URL",
-   "fieldname": "api_url",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "API URL",
-   "reqd": 1
-  },
-  {
-   "fieldname": "api_key",
-   "fieldtype": "Data",
-   "label": "API Key",
-   "reqd": 1
-  },
-  {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "Cloud",
-   "fieldname": "deployment_type",
-   "fieldtype": "Select",
-   "label": "Deployment Type",
-   "options": "Cloud\nSelf-hosted",
-   "reqd": 1
-  },
-  {
-   "fieldname": "webhook_secret",
-   "fieldtype": "Password",
-   "label": "Webhook Secret"
-  },
-  {
-   "description": "Select doctypes to enable for digital signing",
-   "fieldname": "doctypes",
-   "fieldtype": "Table MultiSelect",
-   "label": "Enabled Doctypes",
-   "options": "Documenso Doctype"
-  },
-  {
-   "fieldname": "column_break_2",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "30",
-   "fieldname": "default_expiry_days",
-   "fieldtype": "Int",
-   "label": "Default Expiry Days"
-  },
-  {
-   "default": "7",
-   "fieldname": "reminder_days",
-   "fieldtype": "Int",
-   "label": "Reminder Days"
-  },
-  {
-   "fieldname": "email_settings",
-   "fieldtype": "Section Break",
-   "label": "Email Settings"
-  },
-  {
-   "default": "1",
-   "fieldname": "send_completion_email",
-   "fieldtype": "Check",
-   "label": "Send Completion Email"
-  },
-  {
-   "fieldname": "column_break_3",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "custom_email_template",
-   "fieldtype": "Code",
-   "label": "Custom Email Template",
-   "options": "HTML"
-  },
-  {
-   "fieldname": "authorized_signatory",
-   "fieldtype": "Table",
-   "label": "Authorized Signatories",
-   "options": "Documenso Authorized Signatory"
-  },
-  {
-   "fieldname": "print_format",
-   "fieldtype": "Table",
-   "label": "Print Formats",
-   "options": "Documenso Print Format"
-  },
-  {
-   "fieldname": "section_break_unmn",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "section_break_cwbk",
-   "fieldtype": "Section Break"
-  }
- ],
- "index_web_pages_for_search": 1,
- "issingle": 1,
- "links": [],
- "modified": "2025-05-14 15:32:09.337188",
- "modified_by": "Administrator",
- "module": "Documenso",
- "name": "Documenso Settings",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  }
- ],
- "row_format": "Dynamic",
- "sort_field": "modified",
- "sort_order": "DESC",
- "states": [],
- "track_changes": 1
-}
+    "actions": [],
+    "allow_rename": 1,
+    "creation": "2024-01-01 00:00:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+     "credentials_tab",
+     "api_url",
+     "api_key",
+     "column_break_1",
+     "deployment_type",
+     "webhook_secret",
+     "section_break_unmn",
+     "doctypes",
+     "column_break_2",
+     "default_expiry_days",
+     "reminder_days",
+     "email_settings",
+     "send_completion_email",
+     "column_break_3",
+     "custom_email_template",
+     "section_break_cwbk",
+     "authorized_signatory",
+     "print_format"
+    ],
+    "fields": [
+     {
+      "fieldname": "credentials_tab",
+      "fieldtype": "Tab Break",
+      "label": "Credentials"
+     },
+     {
+      "description": "For cloud: https://app.documenso.com, For self-hosted: your instance URL (without /api/v1)",
+      "fieldname": "api_url",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "API URL",
+      "reqd": 1
+     },
+     {
+      "fieldname": "api_key",
+      "fieldtype": "Data",
+      "label": "API Key",
+      "reqd": 1
+     },
+     {
+      "fieldname": "column_break_1",
+      "fieldtype": "Column Break"
+     },
+     {
+      "default": "Cloud",
+      "fieldname": "deployment_type",
+      "fieldtype": "Select",
+      "label": "Deployment Type",
+      "options": "Cloud\nSelf-hosted",
+      "reqd": 1
+     },
+     {
+      "fieldname": "webhook_secret",
+      "fieldtype": "Password",
+      "label": "Webhook Secret"
+     },
+     {
+      "description": "Select doctypes to enable for digital signing",
+      "fieldname": "doctypes",
+      "fieldtype": "Table MultiSelect",
+      "label": "Enabled Doctypes",
+      "options": "Documenso Doctype"
+     },
+     {
+      "fieldname": "column_break_2",
+      "fieldtype": "Column Break"
+     },
+     {
+      "default": "30",
+      "fieldname": "default_expiry_days",
+      "fieldtype": "Int",
+      "label": "Default Expiry Days"
+     },
+     {
+      "default": "7",
+      "fieldname": "reminder_days",
+      "fieldtype": "Int",
+      "label": "Reminder Days"
+     },
+     {
+      "fieldname": "email_settings",
+      "fieldtype": "Section Break",
+      "label": "Email Settings"
+     },
+     {
+      "default": "1",
+      "fieldname": "send_completion_email",
+      "fieldtype": "Check",
+      "label": "Send Completion Email"
+     },
+     {
+      "fieldname": "column_break_3",
+      "fieldtype": "Column Break"
+     },
+     {
+      "fieldname": "custom_email_template",
+      "fieldtype": "Code",
+      "label": "Custom Email Template",
+      "options": "HTML"
+     },
+     {
+      "fieldname": "authorized_signatory",
+      "fieldtype": "Table",
+      "label": "Authorized Signatories",
+      "options": "Documenso Authorized Signatory"
+     },
+     {
+      "fieldname": "print_format",
+      "fieldtype": "Table",
+      "label": "Print Formats",
+      "options": "Documenso Print Format"
+     },
+     {
+      "fieldname": "section_break_unmn",
+      "fieldtype": "Section Break"
+     },
+     {
+      "fieldname": "section_break_cwbk",
+      "fieldtype": "Section Break"
+     }
+    ],
+    "index_web_pages_for_search": 1,
+    "issingle": 1,
+    "links": [],
+    "modified": "2025-05-14 15:32:09.337188",
+    "modified_by": "Administrator",
+    "module": "Documenso",
+    "name": "Documenso Settings",
+    "owner": "Administrator",
+    "permissions": [
+     {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "print": 1,
+      "read": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+     }
+    ],
+    "row_format": "Dynamic",
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+   }

@@ -17,37 +17,33 @@ frappe.call({
                     if (!frm.is_new()) {
                         // Request Sign button
                         frm.add_custom_button("Request Sign", function() {
-                            frappe.confirm(
-                                'Are you sure you want to send this document for signing?',
-                                () => {
-                                    frappe.call({
-                                        method: "documenso.documenso.api.request_sign.send_signing_request",
-                                        args: {
-                                            docname: frm.doc.name,
-                                            doctype: frm.doc.doctype
-                                        },
-                                        callback: (response) => {
-                                            frm.reload_doc();
-                                        }
-                                    });
+                            frappe.call({
+                                method: "documenso.documenso.api.request_sign.send_email_request",
+                                args: {
+                                    docname: frm.doc.name,
+                                    doctype: frm.doc.doctype
+                                },
+                                callback: (response) => {
+                                    frappe.msgprint("Document sent for signing with smart field placement");
+                                    frm.reload_doc();
                                 }
-                            );
+                            });
                         });
                         
-                        // Fetch Signatories button
-                        frm.add_custom_button("Fetch Signatories", function() {
+                        // Fetch Sign info button
+                        frm.add_custom_button("Fetch Sign info", function() {
                             frappe.confirm(
                                 "This will clear the current Signatory Details. Are you sure you want to proceed?",
                                 function() {
                                     frappe.call({
-                                        method: "documenso.documenso.api.request_sign.fetch_authorized_signatories",
+                                        method: "documenso.documenso.api.documenso.fetch_documenso_authorized_signatory",
                                         args: {
                                             docname: frm.doc.name,
                                             doctype: frm.doc.doctype
                                         },
                                         callback: (response) => {
+                                            frappe.msgprint("Default Signatory details fetched successfully");
                                             frm.reload_doc();
-                                            frappe.msgprint("Default signatory details fetched successfully");
                                         }
                                     });
                                 }
@@ -58,7 +54,7 @@ frappe.call({
                         if (frm.doc.document_id) {
                             frm.add_custom_button("Check Status", function() {
                                 frappe.call({
-                                    method: "documenso.documenso.api.request_sign.check_signing_status",
+                                    method: "documenso.documenso.api.documenso.check_document_status",
                                     args: {
                                         docname: frm.doc.name,
                                         doctype: frm.doc.doctype
@@ -88,54 +84,25 @@ frappe.call({
                                 );
                             });
                         }
-                    }
-                    
-                    // Style the signatory detail table
-                    if (frm.fields_dict['signatory_detail']) {
-                        // Make the table read-only after signing request is sent
-                        if (frm.doc.document_id) {
-                            frm.fields_dict['signatory_detail'].grid.wrapper.find('.grid-add-row').hide();
-                            frm.fields_dict['signatory_detail'].grid.static_rows = true;
+                        
+                        // Add placeholder info
+                        if (frm.fields_dict['signatory_detail']) {
+                            frm.set_df_property('signatory_detail', 'description', 
+                                'Add {{signature_1}}, {{signature_2}} etc. in your print format for automatic signature placement');
                         }
-                    }
-                    
-                    // Show status indicators
-                    if (frm.doc.signatory_detail) {
-                        frm.doc.signatory_detail.forEach(row => {
-                            if (row.signature_status === 'Signed') {
-                                frm.set_df_property('signatory_detail', 'read_only', 1);
-                            }
-                        });
                     }
                 }
             });
             
             // Add events for signatory detail table
             frappe.ui.form.on('Documenso Signatory Detail', {
-                before_signatory_detail_remove: function(frm, cdt, cdn) {
-                    // Prevent deletion if document has been sent
-                    if (frm.doc.document_id) {
-                        frappe.msgprint(__('Cannot modify signatories after document has been sent for signing'));
-                        return false;
+                place_sign: function(frm, cdt, cdn) {
+                    var row = locals[cdt][cdn];
+                    if (row.sign_position == "Customize") {
+                        frappe.set_route('documenso-template-builder');
                     }
                 }
             });
         });
     }
 });
-
-// Global helper function for displaying signing status
-frappe.documenso = {
-    get_status_indicator: function(status) {
-        const status_map = {
-            'Not Initiated': { color: 'gray', label: 'Not Initiated' },
-            'Pending': { color: 'orange', label: 'Pending' },
-            'Viewed': { color: 'blue', label: 'Viewed' },
-            'Signed': { color: 'green', label: 'Signed' },
-            'Declined': { color: 'red', label: 'Declined' },
-            'Failed': { color: 'red', label: 'Failed' }
-        };
-        
-        return status_map[status] || { color: 'gray', label: status };
-    }
-};

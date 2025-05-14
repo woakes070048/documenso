@@ -21,8 +21,9 @@ class DocumensoAPI:
         """Test the API connection"""
         try:
             response = requests.get(
-                f"{self.base_url}/api/v1/teams",
+                f"{self.base_url}/api/v1/documents",
                 headers=self.headers,
+                params={"limit": 1},
                 timeout=10
             )
             return {"success": response.status_code == 200}
@@ -33,7 +34,6 @@ class DocumensoAPI:
     def create_document(self, title, pdf_content):
         """Create a document in Documenso"""
         try:
-            # Convert PDF content to base64
             pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
             
             response = requests.post(
@@ -41,16 +41,16 @@ class DocumensoAPI:
                 headers=self.headers,
                 json={
                     "title": title,
-                    "documentData": pdf_base64,
+                    "documentDataAsBase64": pdf_base64,
                     "type": "application/pdf"
                 },
                 timeout=30
             )
             
-            if response.status_code == 201:
+            if response.status_code in [200, 201]:
                 return response.json()
             else:
-                frappe.throw(f"Failed to create document: {response.text}")
+                frappe.throw(f"Failed to create document: {response.status_code} - {response.text}")
         except Exception as e:
             frappe.log_error(str(e), "Documenso Create Document Failed")
             frappe.throw(str(e))
@@ -58,17 +58,26 @@ class DocumensoAPI:
     def add_recipient(self, document_id, recipient_data):
         """Add a recipient to a document"""
         try:
+            payload = {
+                "email": recipient_data["email"],
+                "name": recipient_data["name"],
+                "role": recipient_data.get("role", "SIGNER")
+            }
+            
+            if "signingOrder" in recipient_data:
+                payload["signingOrder"] = recipient_data["signingOrder"]
+            
             response = requests.post(
                 f"{self.base_url}/api/v1/documents/{document_id}/recipients",
                 headers=self.headers,
-                json=recipient_data,
+                json=payload,
                 timeout=30
             )
             
-            if response.status_code == 201:
+            if response.status_code in [200, 201]:
                 return response.json()
             else:
-                frappe.throw(f"Failed to add recipient: {response.text}")
+                frappe.throw(f"Failed to add recipient: {response.status_code} - {response.text}")
         except Exception as e:
             frappe.log_error(str(e), "Documenso Add Recipient Failed")
             frappe.throw(str(e))
@@ -76,17 +85,38 @@ class DocumensoAPI:
     def add_field(self, document_id, field_data):
         """Add a field to a document"""
         try:
+            # Documenso API expects specific format
+            payload = {
+                "recipientId": field_data["recipientId"],
+                "type": field_data.get("type", "SIGNATURE"),
+                "placeholder": field_data.get("placeholder", ""),
+                "required": field_data.get("required", True)
+            }
+            
+            # If placeholder text is provided, use it for positioning
+            if field_data.get("placeholder"):
+                payload["placeholder"] = field_data["placeholder"]
+            else:
+                # Fallback to coordinate-based if no placeholder
+                payload.update({
+                    "page": field_data.get("page", 1),
+                    "x": field_data.get("x", 100),
+                    "y": field_data.get("y", 100),
+                    "width": field_data.get("width", 200),
+                    "height": field_data.get("height", 50)
+                })
+            
             response = requests.post(
                 f"{self.base_url}/api/v1/documents/{document_id}/fields",
                 headers=self.headers,
-                json=field_data,
+                json=payload,
                 timeout=30
             )
             
-            if response.status_code == 201:
+            if response.status_code in [200, 201]:
                 return response.json()
             else:
-                frappe.throw(f"Failed to add field: {response.text}")
+                frappe.throw(f"Failed to add field: {response.status_code} - {response.text}")
         except Exception as e:
             frappe.log_error(str(e), "Documenso Add Field Failed")
             frappe.throw(str(e))
@@ -97,13 +127,14 @@ class DocumensoAPI:
             response = requests.post(
                 f"{self.base_url}/api/v1/documents/{document_id}/send",
                 headers=self.headers,
+                json={},
                 timeout=30
             )
             
-            if response.status_code == 200:
+            if response.status_code in [200, 201]:
                 return response.json()
             else:
-                frappe.throw(f"Failed to send document: {response.text}")
+                frappe.throw(f"Failed to send document: {response.status_code} - {response.text}")
         except Exception as e:
             frappe.log_error(str(e), "Documenso Send Document Failed")
             frappe.throw(str(e))
@@ -120,7 +151,7 @@ class DocumensoAPI:
             if response.status_code == 200:
                 return response.json()
             else:
-                frappe.throw(f"Failed to get document status: {response.text}")
+                frappe.throw(f"Failed to get document status: {response.status_code} - {response.text}")
         except Exception as e:
             frappe.log_error(str(e), "Documenso Get Document Status Failed")
             frappe.throw(str(e))
@@ -137,7 +168,7 @@ class DocumensoAPI:
             if response.status_code == 200:
                 return response.content
             else:
-                frappe.throw(f"Failed to download document: {response.text}")
+                frappe.throw(f"Failed to download document: {response.status_code} - {response.text}")
         except Exception as e:
             frappe.log_error(str(e), "Documenso Download Document Failed")
             frappe.throw(str(e))
@@ -152,19 +183,16 @@ def test_connection():
 
 @frappe.whitelist()
 def create_and_send_document(doctype, docname):
-    """Create and send a document for signing"""
+    """Create and send document with placeholder-based field placement"""
     doc = frappe.get_doc(doctype, docname)
     api = DocumensoAPI()
     
     # Generate PDF
-    print_format = doc.requested_print_format
-    letter_head = doc.requested_letter_head
-    
     html = frappe.get_print(
         doctype=doctype,
         name=docname,
-        print_format=print_format,
-        letterhead=letter_head
+        print_format=doc.requested_print_format,
+        letterhead=doc.requested_letter_head
     )
     pdf_content = get_pdf(html)
     
@@ -185,30 +213,52 @@ def create_and_send_document(doctype, docname):
             "signingOrder": signatory.signing_order or idx + 1
         }
         
-        if signatory.message:
-            recipient_data["message"] = signatory.message
-        
         recipient = api.add_recipient(document_id, recipient_data)
-        signatory.recipient_id = recipient["id"]
-        signatory.signature_status = "Pending"
+        recipient_id = recipient["id"]
         
-        # Add signature field for this recipient
+        # Update signatory
+        signatory.recipient_id = recipient_id
+        signatory.signature_status = "Pending Review"
+        
+        # Add signature field using placeholder
         field_data = {
-            "recipientId": recipient["id"],
+            "recipientId": recipient_id,
             "type": "SIGNATURE",
-            "page": 1,
-            "x": 100,
-            "y": 100 + (idx * 100),  # Space out signatures
-            "width": 200,
-            "height": 50,
+            "placeholder": signatory.placeholder or f"{{{{signature_{idx + 1}}}}}",
             "required": signatory.required
         }
         api.add_field(document_id, field_data)
+        
+        # Add date field next to signature
+        date_field_data = {
+            "recipientId": recipient_id,
+            "type": "DATE",
+            "placeholder": f"{{{{date_{idx + 1}}}}}",
+            "required": True
+        }
+        api.add_field(document_id, date_field_data)
     
     doc.save()
     
     # Send document
     api.send_document(document_id)
+    
+    # Send notification emails
+    for signatory in doc.signatory_detail:
+        signing_link = f"{api.base_url}/sign/{document_id}"
+        
+        frappe.sendmail(
+            recipients=[signatory.signatory_email],
+            subject=f"Please sign: {doctype} {docname}",
+            message=f"""
+            <p>Dear {signatory.signatory_name},</p>
+            <p>Please review and sign the document: {doctype} {docname}</p>
+            <p><a href="{signing_link}" style="background: #22BC66; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Sign Document</a></p>
+            <p>Thank you.</p>
+            """,
+            reference_doctype=doctype,
+            reference_name=docname
+        )
     
     frappe.msgprint(f"Document sent for signing. Document ID: {document_id}")
     return {"status": "success", "document_id": document_id}
@@ -229,11 +279,11 @@ def check_document_status(doctype, docname):
         for signatory in doc.signatory_detail:
             if signatory.recipient_id == recipient["id"]:
                 status_map = {
-                    "PENDING": "Pending",
-                    "SENT": "Pending",
-                    "VIEWED": "Viewed",
-                    "SIGNED": "Signed",
-                    "DECLINED": "Declined"
+                    "PENDING": "Pending Review",
+                    "SENT": "Pending Review",
+                    "VIEWED": "Review In-Progress",
+                    "SIGNED": "Completed",
+                    "DECLINED": "Rejected"
                 }
                 signatory.signature_status = status_map.get(recipient["status"], recipient["status"])
                 if recipient.get("signedAt"):
@@ -244,17 +294,15 @@ def check_document_status(doctype, docname):
     # If all signed, download the document
     if status_data.get("status") == "COMPLETED":
         signed_pdf = api.download_signed_document(doc.document_id)
-        file_doc = frappe.get_doc({
-            "doctype": "File",
-            "content": signed_pdf,
-            "attached_to_doctype": doctype,
-            "attached_to_name": docname,
-            "file_type": "PDF",
-            "is_private": 0,
-            "file_name": f"{docname}_signed.pdf",
-            "folder": "Home/Attachments"
-        })
-        file_doc.insert(ignore_permissions=True)
+        
+        file_doc = frappe.new_doc("File")
+        file_doc.file_name = f"{docname}_signed.pdf"
+        file_doc.content = signed_pdf
+        file_doc.attached_to_doctype = doctype
+        file_doc.attached_to_name = docname
+        file_doc.folder = "Home/Attachments"
+        file_doc.is_private = 0
+        file_doc.save(ignore_permissions=True)
         
         frappe.db.set_value(doctype, docname, "signed_document", file_doc.file_url)
         frappe.msgprint("Document has been signed and attached")
@@ -266,19 +314,19 @@ def check_document_status(doctype, docname):
 def send_reminder(doctype, docname):
     """Send reminder to signatories"""
     doc = frappe.get_doc(doctype, docname)
+    api = DocumensoAPI()
     
     for signatory in doc.signatory_detail:
-        if signatory.signature_status in ["Pending", "Viewed"]:
-            # Send reminder email through Documenso
-            # This would use Documenso's reminder API if available
-            # For now, send a manual reminder
+        if signatory.signature_status in ["Pending Review", "Review In-Progress"]:
+            signing_link = f"{api.base_url}/sign/{doc.document_id}"
+            
             frappe.sendmail(
                 recipients=[signatory.signatory_email],
                 subject=f"Reminder: Please sign {doctype} {docname}",
                 message=f"""
                 <p>Dear {signatory.signatory_name},</p>
                 <p>This is a reminder to sign the document: {doctype} {docname}</p>
-                <p>Please check your email for the signing link from Documenso.</p>
+                <p><a href="{signing_link}" style="background: #22BC66; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Sign Document</a></p>
                 <p>Thank you.</p>
                 """,
                 reference_doctype=doctype,
@@ -286,3 +334,137 @@ def send_reminder(doctype, docname):
             )
     
     frappe.msgprint("Reminders sent successfully")
+
+
+@frappe.whitelist()
+def download_document_pdf(doctype, docname, signatory_details=None):
+    """Download PDF for preview"""
+    doc = frappe.get_doc(doctype, docname)
+    
+    if doc.signed_document:
+        file_path = frappe.get_doc("File", {"file_url": doc.signed_document}).get_full_path()
+        with open(file_path, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
+    else:
+        html = frappe.get_print(
+            doctype=doctype,
+            name=docname,
+            print_format=doc.requested_print_format,
+            letterhead=doc.requested_letter_head
+        )
+        return base64.b64encode(get_pdf(html)).decode("utf-8")
+
+
+@frappe.whitelist()
+def fetch_documenso_authorized_signatory(doctype, docname):
+    """Fetch authorized signatories from contacts and document owner"""
+    doc = frappe.get_doc(doctype, docname)
+    settings_doc = frappe.get_doc("Documenso Settings")
+    
+    # Clear existing signatories
+    doc.signatory_detail = []
+    
+    # Add signatories based on settings
+    signatory_index = 1
+    
+    for setting in settings_doc.authorized_signatory:
+        if setting.permitted_doctype == doctype:
+            if setting.signatory_type == "Contact":
+                # Get contact from document
+                contact = get_contact_from_document(doc)
+                if contact:
+                    doc.append("signatory_detail", {
+                        "signatory_name": contact.get("name") or contact.get("full_name"),
+                        "signatory_email": contact.get("email_id"),
+                        "signing_order": signatory_index,
+                        "required": setting.required,
+                        "message": setting.message,
+                        "placeholder": setting.placeholder or f"{{{{signature_{signatory_index}}}}}",
+                        "signatory_type": "Customer/Supplier"
+                    })
+                    signatory_index += 1
+            
+            elif setting.signatory_type == "Document Owner":
+                # Get document owner
+                owner = frappe.get_doc("User", doc.owner)
+                doc.append("signatory_detail", {
+                    "signatory": doc.owner,
+                    "signatory_name": owner.full_name,
+                    "signatory_email": owner.email,
+                    "signing_order": signatory_index,
+                    "required": setting.required,
+                    "message": setting.message,
+                    "placeholder": setting.placeholder or f"{{{{signature_{signatory_index}}}}}",
+                    "signatory_type": "Internal"
+                })
+                signatory_index += 1
+            
+            elif setting.signatory_type == "User" and setting.signatory:
+                # Specific user
+                user = frappe.get_doc("User", setting.signatory)
+                doc.append("signatory_detail", {
+                    "signatory": setting.signatory,
+                    "signatory_name": user.full_name or setting.signatory_name,
+                    "signatory_email": user.email or setting.signatory_email,
+                    "signing_order": signatory_index,
+                    "required": setting.required,
+                    "message": setting.message,
+                    "placeholder": setting.placeholder or f"{{{{signature_{signatory_index}}}}}",
+                    "signatory_type": "Internal"
+                })
+                signatory_index += 1
+    
+    # Set print format and letter head
+    for print_format in settings_doc.print_format:
+        if print_format.permitted_doctype == doctype:
+            doc.requested_print_format = print_format.print_format
+            doc.requested_letter_head = print_format.letter_head
+            break
+    
+    doc.save()
+    frappe.msgprint("Signatories fetched successfully")
+
+
+def get_contact_from_document(doc):
+    """Get contact from document based on customer/supplier/employee"""
+    contact = None
+    
+    # Try to get contact based on common link fields
+    if hasattr(doc, "customer") and doc.customer:
+        contact = get_primary_contact("Customer", doc.customer)
+    elif hasattr(doc, "supplier") and doc.supplier:
+        contact = get_primary_contact("Supplier", doc.supplier)
+    elif hasattr(doc, "employee") and doc.employee:
+        contact = get_primary_contact("Employee", doc.employee)
+    elif hasattr(doc, "party_name") and doc.party_name:
+        # For documents with party_type and party_name
+        party_type = getattr(doc, "party_type", None)
+        if party_type:
+            contact = get_primary_contact(party_type, doc.party_name)
+    
+    return contact
+
+
+def get_primary_contact(doctype, name):
+    """Get primary contact for a party"""
+    contacts = frappe.get_all(
+        "Dynamic Link",
+        filters={
+            "link_doctype": doctype,
+            "link_name": name,
+            "parenttype": "Contact"
+        },
+        fields=["parent"]
+    )
+    
+    if contacts:
+        # Get the primary contact or first available
+        for contact in contacts:
+            contact_doc = frappe.get_doc("Contact", contact.parent)
+            if contact_doc.is_primary_contact:
+                return contact_doc.as_dict()
+        
+        # Return first contact if no primary found
+        return frappe.get_doc("Contact", contacts[0].parent).as_dict()
+    
+    return None

@@ -25,6 +25,13 @@ required_apps = ["frappe", "erpnext"]
 
 # Webhooks
 webhook_events = {
-    "documenso.signature.completed": "documenso.documenso.api.webhook.handle_signature_completed",
-    "documenso.document.completed": "documenso.documenso.api.webhook.handle_document_completed"
+    "on_method": "documenso.documenso.api.webhook.documenso_webhook"
 }
+
+# Website Route (for webhook endpoint)
+website_route_rules = [
+    {
+        "from_route": "/api/webhooks/documenso",
+        "to_route": "documenso.documenso.api.webhook.documenso_webhook"
+    }
+]

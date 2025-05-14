@@ -33,13 +33,39 @@
             color: #333;
             margin-bottom: 10px;
         }
+        p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
     </style>
+    <script>
+        // Function to Close the Browser Tab
+        function closeTab() {
+            window.close();
+        }
+    </script>
 </head>
 <body>
     <div class="container">
-        <div class="checkmark">✓</div>
+        <div class="checkmark">&#10004;</div>
         <h1>Success!</h1>
-        <p>The document has been signed successfully.</p>
+        <p>The Document has been signed successfully. You can safely close this tab.</p>
     </div>
 </body>
 </html>

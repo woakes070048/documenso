@@ -17,6 +17,10 @@ class DocumensoSettings(Document):
         # Remove trailing slash from API URL
         if self.api_url and self.api_url.endswith('/'):
             self.api_url = self.api_url[:-1]
+        
+        # Remove /api/v1 if included in URL
+        if self.api_url and self.api_url.endswith('/api/v1'):
+            self.api_url = self.api_url[:-7]
     
     def on_update(self):
         # Handle doctype custom fields
@@ -35,3 +39,7 @@ class DocumensoSettings(Document):
             # Add custom fields to new doctypes
             for doctype in added_doctypes:
                 make_custom_fields(doctype, "documenso")
+        else:
+            # First time save - add custom fields for all doctypes
+            for doctype_row in self.doctypes:
+                make_custom_fields(doctype_row.doctype_name, "documenso")
